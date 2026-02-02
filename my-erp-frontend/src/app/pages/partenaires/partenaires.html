@@ -1,0 +1,115 @@
+
+<p-toast></p-toast>
+
+<p-confirmDialog header="Confirmation" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+<div class="bg-white rounded-xl shadow-sm p-6">
+
+  <div class="flex justify-between items-center mb-6">
+  <h2 class="text-2xl font-bold text-gray-800 uppercase">
+    Listes des {{ currentType | titlecase }}s
+  </h2>
+    <button (click)="openNew()"
+      class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+      <i class="pi pi-plus"></i>
+      New {{ currentType | titlecase }}
+    </button>
+  </div>
+
+<p-table [value]="partenaireList" [tableStyle]="{ 'min-width': '60rem' }" styleClass="p-datatable-striped">
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th class="p-3 bg-gray-50" style="width:25%">Nom Société</th>
+      <th class="p-3 bg-gray-50" style="width:25%">Contact</th>
+
+      <th class="p-3 bg-gray-50" style="width:15%" *ngIf="currentType.toLowerCase() === 'fournisseur'">ICE</th>
+
+      <th class="p-3 bg-gray-50" style="width:20%">Ville/Adresse</th>
+      <th class="p-3 bg-gray-50 text-right" style="width:15%">Actions</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-item>
+    <tr class="border-b hover:bg-gray-50">
+      <td class="p-3 font-bold">{{ item.nom_societe }}</td>
+
+      <td class="p-3">
+        <div class="text-sm text-gray-800"><i class="pi pi-phone mr-1"></i> {{ item.telephone }}</div>
+        <div class="text-xs text-gray-500">{{ item.email }}</div>
+      </td>
+
+      <td class="p-3" *ngIf="currentType.toLowerCase() === 'fournisseur'">
+        <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-mono">{{ item.ice }}</span>
+      </td>
+
+      <td class="p-3 text-sm text-gray-600 truncate max-w-xs">{{ item.adresse }}</td>
+
+      <td class="p-3 text-right">
+        <button (click)="onEdit(item)" class="text-blue-500 mx-2 hover:text-blue-700">
+          <i class="pi pi-pencil"></i>
+        </button>
+        <button (click)="onDelete(item.id)" class="text-red-500 hover:text-red-700">
+          <i class="pi pi-trash"></i>
+        </button>
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td [attr.colspan]="currentType.toLowerCase() === 'fournisseur' ? 5 : 4" class="text-center p-4 text-gray-500">
+        No {{ currentType }}s found.
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+</div>
+
+
+<p-dialog [header]="(partenaireObj.id == 0 ? 'New ' : 'Edit ') + (currentType | titlecase)" [(visible)]="visible"
+  [modal]="true" [style]="{ width: '40vw' }">
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+
+    <div class="flex flex-col gap-2 md:col-span-2">
+      <label class="font-semibold text-gray-600">Nom / Société</label>
+      <input pInputText [(ngModel)]="partenaireObj.nom_societe"
+        class="p-2 border rounded outline-none focus:border-blue-500" placeholder="Ex: Acme Corp" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-gray-600">Email</label>
+      <input pInputText [(ngModel)]="partenaireObj.email"
+        class="p-2 border rounded outline-none focus:border-blue-500" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-gray-600">Téléphone</label>
+      <input pInputText [(ngModel)]="partenaireObj.telephone"
+        class="p-2 border rounded outline-none focus:border-blue-500" />
+    </div>
+
+    <div class="flex flex-col gap-2 md:col-span-2" *ngIf="currentType.toLowerCase() === 'fournisseur'">
+      <label class="font-semibold text-gray-600">ICE (Identifiant Fiscal)</label>
+      <input pInputText [(ngModel)]="partenaireObj.ice" class="p-2 border rounded outline-none focus:border-blue-500"
+        placeholder="Ex: 0015248..." />
+    </div>
+
+    <div class="flex flex-col gap-2 md:col-span-2">
+      <label class="font-semibold text-gray-600">Adresse Complète</label>
+      <textarea pInputTextarea [(ngModel)]="partenaireObj.adresse" rows="3"
+        class="p-2 border rounded outline-none focus:border-blue-500"></textarea>
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2 mt-4">
+      <button (click)="visible = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+      <button (click)="savePartenaire()"
+        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+    </div>
+  </ng-template>
+
+</p-dialog>

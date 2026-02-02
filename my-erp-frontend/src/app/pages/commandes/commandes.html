@@ -1,0 +1,388 @@
+<p-toast></p-toast>
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+<div class="bg-white rounded-xl shadow-sm p-6 no-print">
+
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800 uppercase">{{ currentType }}s Management</h2>
+      <p class="text-gray-500 text-sm">Gérez vos commandes de {{ currentType }}</p>
+    </div>
+    <button (click)="openNew()"
+      class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-lg shadow-blue-200">
+      <i class="pi pi-plus"></i> Nouveau {{ currentType | titlecase }}
+    </button>
+  </div>
+
+  <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mb-6">
+    <div class="flex items-center gap-2 mb-4 text-gray-500">
+      <div class="bg-blue-50 p-1.5 rounded">
+        <i class="pi pi-filter text-blue-600"></i>
+      </div>
+      <span class="text-sm font-bold uppercase tracking-wider">Filtres de Recherche</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+      <div class="md:col-span-3 flex flex-col gap-2">
+        <label class="text-xs font-bold text-gray-500 uppercase">Reference</label>
+        <div class="relative w-full group">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input type="text" pInputText placeholder="Rech. Ref..." [(ngModel)]="filterReference"
+            class="w-full pl-10 pr-3 py-2.5 border-gray-300 rounded-lg text-sm focus:border-blue-500" />
+        </div>
+      </div>
+
+      <div class="md:col-span-3 flex flex-col gap-2">
+        <label class="text-xs font-bold text-gray-500 uppercase">
+          {{ currentType === 'vente' ? 'Client' : 'Fournisseur' }}
+        </label>
+        <p-dropdown [options]="partenairesList" [(ngModel)]="filterPartenaire" optionLabel="nom_societe"
+          placeholder="Tous..." [showClear]="true" [filter]="true" appendTo="body"
+          styleClass="w-full p-inputtext-sm border-gray-300 rounded-lg">
+        </p-dropdown>
+      </div>
+
+      <div class="md:col-span-3 flex flex-col gap-2">
+        <label class="text-xs font-bold text-gray-500 uppercase">Date Exacte</label>
+        <p-calendar [(ngModel)]="filterDateDu" dateFormat="dd/mm/yy" placeholder="jj/mm/aaaa" [showIcon]="true"
+          appendTo="body" styleClass="w-full p-inputtext-sm" inputStyleClass="w-full rounded-lg border-gray-300">
+        </p-calendar>
+      </div>
+
+      <div class="md:col-span-3 flex gap-2">
+        <button pButton label="Chercher" icon="pi pi-search"
+          class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2.5 rounded-lg font-bold shadow-md transition">
+        </button>
+        <button pButton icon="pi pi-refresh"
+          class="bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 px-3 rounded-lg transition"
+          pTooltip="Réinitialiser">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p-table [value]="commandesList" [lazy]="true" (onLazyLoad)="loadCommandes($event)" [paginator]="true" [rows]="rows"
+    [totalRecords]="totalRecords" [loading]="loading" [rowsPerPageOptions]="[5, 10, 20, 50]" [first]="first"
+    styleClass="p-datatable-striped" [tableStyle]="{'min-width': '60rem'}">
+
+    <ng-template pTemplate="header">
+      <tr class="uppercase text-xs text-gray-500 bg-gray-50">
+        <th class="p-4">Reference</th>
+        <th class="p-4">Date</th>
+        <th class="p-4">{{ currentType === 'vente' ? 'Client' : 'Fournisseur' }}</th>
+        <th class="p-4 text-right">Total</th>
+        <th class="p-4 text-center">Statut</th>
+        <th class="p-4 text-center">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-com>
+      <tr class="border-b hover:bg-gray-50 transition">
+        <td class="p-4 font-bold text-gray-700">{{ com.reference }}</td>
+        <td class="p-4 text-gray-600">{{ com.date | date:'dd/MM/yyyy' }}</td>
+        <td class="p-4">
+          <span class="bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-xs font-bold">
+            {{ com.partenaire?.nom_societe || com.partenaire?.nom || '-' }}
+          </span>
+        </td>
+        <td class="p-4 text-right font-bold text-gray-800">
+          {{ com.total | number:'1.2-2' }} DH
+        </td>
+
+        <td class="p-4 text-center">
+          <p-tag [value]="com.statut ? com.statut : 'devis'"
+            [severity]="com.statut === 'validee' ? 'success' : 'warning'" styleClass="uppercase text-xs">
+          </p-tag>
+        </td>
+
+        <td class="p-4 flex justify-center gap-2">
+          <button *ngIf="com.statut === 'validee'" pButton icon="pi pi-dollar" (click)="openPaiement(com)"
+            class="p-button-rounded p-button-success p-button-sm shadow-md" pTooltip="Ajouter Paiement">
+          </button>
+          <button *ngIf="com.statut !== 'validee'" pButton icon="pi pi-check" (click)="validerCommande(com)"
+            class="p-button-rounded p-button-text p-button-success p-button-sm" pTooltip="Valider">
+          </button>
+
+          <button pButton icon="pi pi-print" (click)="printInvoice(com)"
+            class="p-button-rounded p-button-text p-button-secondary p-button-sm" pTooltip="Imprimer">
+          </button>
+
+          <button *ngIf="com.statut !== 'validee'" pButton icon="pi pi-pencil" (click)="editCommande(com)"
+            class="p-button-rounded p-button-text p-button-info p-button-sm" pTooltip="Modifier">
+          </button>
+
+          <button *ngIf="com.statut !== 'validee'" pButton icon="pi pi-trash" (click)="deleteCommande(com)"
+            class="p-button-rounded p-button-text p-button-danger p-button-sm" pTooltip="Supprimer">
+          </button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="text-center p-8 text-gray-500">
+          Aucune commande trouvée.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+</div>
+
+<p-dialog [header]="(isEditMode ? 'Modifier ' : 'Nouveau ') + (currentType | titlecase)" [(visible)]="visible"
+  [modal]="true" [style]="{width: '70vw'}" [maximizable]="true" styleClass="no-print">
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg border">
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-semibold text-gray-600">Reference</label>
+      <input pInputText [(ngModel)]="commandeObj.reference" class="w-full p-2 border rounded" />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-semibold text-gray-600">Date</label>
+      <p-calendar [(ngModel)]="commandeObj.date" dateFormat="dd/mm/yy" [showIcon]="true"
+        styleClass="w-full"></p-calendar>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-sm font-semibold text-gray-600">
+        {{ currentType === 'vente' ? 'Client' : 'Fournisseur' }}
+      </label>
+      <div class="flex gap-2">
+        <p-dropdown [options]="partenairesList" [(ngModel)]="commandeObj.partenaire" optionLabel="nom_societe"
+          placeholder="Select..." [filter]="true" styleClass="w-full" class="w-full">
+        </p-dropdown>
+        <button pButton icon="pi pi-plus" (click)="displayQuickAdd = true" class="p-button-success shadow-none"
+          pTooltip="Nouveau Client Rapide">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="font-bold text-gray-700 mb-2">Produits</h3>
+  <div class="border rounded-lg overflow-hidden mb-4">
+    <table class="w-full text-sm text-left">
+      <thead class="bg-gray-100 text-gray-600 uppercase font-medium">
+        <tr>
+          <th class="p-3 w-5/12">Produit</th>
+          <th class="p-3 w-2/12">Qté</th>
+          <th class="p-3 w-2/12">Prix (DH)</th>
+          <th class="p-3 w-2/12 text-right">Total</th>
+          <th class="p-3 w-1/12 text-center">X</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let line of commandeObj.ligneCommandes; let i = index" class="border-b">
+          <td class="p-2">
+            <p-dropdown [options]="productsList" [(ngModel)]="line.produit" optionLabel="designation"
+              placeholder="Rech. Produit..." [filter]="true" (onChange)="onProductSelect(line)" appendTo="body"
+              styleClass="w-full">
+            </p-dropdown>
+          </td>
+          <td class="p-2">
+            <p-inputNumber [(ngModel)]="line.quantite" (onInput)="calculateLineTotal(line)" [min]="1"
+              styleClass="w-full"></p-inputNumber>
+          </td>
+          <td class="p-2">
+            <p-inputNumber [(ngModel)]="line.prix_unitaire" (onInput)="calculateLineTotal(line)" mode="currency"
+              currency="MAD" styleClass="w-full"></p-inputNumber>
+          </td>
+          <td class="p-2 text-right font-bold text-gray-700">
+            {{ line.total_line | number:'1.2-2' }}
+          </td>
+          <td class="p-2 text-center">
+            <button (click)="removeLine(i)" class="text-red-500 hover:bg-red-50 p-2 rounded-full transition">
+              <i class="pi pi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button (click)="addLine()"
+      class="w-full py-2 bg-gray-50 text-blue-600 font-semibold hover:bg-blue-50 border-t transition">
+      <i class="pi pi-plus mr-2"></i> Ajouter un produit
+    </button>
+  </div>
+
+  <div class="flex justify-end items-center gap-4 mt-6 border-t pt-4">
+    <div class="text-right mr-6">
+      <span class="block text-gray-500 text-sm">Grand Total</span>
+      <span class="block text-3xl font-bold text-blue-600">{{ commandeObj.total | number:'1.2-2' }} DH</span>
+    </div>
+    <button (click)="visible = false" class="px-6 py-3 rounded-lg text-gray-600 hover:bg-gray-100">Annuler</button>
+    <button (click)="saveCommande()" type="button"
+      class="px-6 py-3 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-lg shadow-blue-200">
+      <i class="pi pi-check mr-2"></i> Enregistrer
+    </button>
+  </div>
+</p-dialog>
+
+<p-dialog header="Nouveau Client (Rapide)" [(visible)]="displayQuickAdd" [modal]="true" [style]="{width: '400px'}"
+  [draggable]="false" [resizable]="false" styleClass="no-print">
+
+  <div class="flex flex-col gap-3 pt-2">
+    <div>
+      <label class="block text-sm font-bold text-gray-700 mb-1">Nom Complet / Société</label>
+      <input pInputText type="text" [(ngModel)]="newClientName" placeholder="Ex: Mr. Ahmed Alami" class="w-full"
+        (keydown.enter)="saveQuickClient()" autofocus />
+    </div>
+    <p class="text-xs text-gray-500 bg-yellow-50 p-2 rounded border border-yellow-100">
+      <i class="pi pi-info-circle mr-1"></i> Ce client sera créé avec des infos par défaut. Vous pourrez le compléter
+      plus tard.
+    </p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Annuler" icon="pi pi-times" (click)="displayQuickAdd = false"
+      class="p-button-text text-gray-600"></button>
+    <button pButton label="Créer" icon="pi pi-check" (click)="saveQuickClient()"
+      class="bg-blue-600 border-blue-600"></button>
+  </ng-template>
+</p-dialog>
+
+
+<div id="invoice-area" class="print-only" *ngIf="selectedInvoice">
+  <div class="flex justify-between items-start mb-10 pb-4 border-b-2 border-black">
+    <div>
+      <h1 class="text-5xl font-bold uppercase tracking-tighter"
+        [ngClass]="selectedInvoice.statut === 'validee' ? 'text-black' : 'text-orange-600'">
+        {{ selectedInvoice.statut === 'validee' ? 'FACTURE' : 'DEVIS' }}
+      </h1>
+      <p class="text-gray-600 mt-2 font-mono text-lg">#{{ selectedInvoice.reference }}</p>
+    </div>
+    <div class="text-right">
+      <h2 class="text-2xl font-bold text-black">MY ERP COMPANY</h2>
+      <p class="text-sm text-gray-800">123, Avenue Hassan II</p>
+      <p class="text-sm text-gray-800">Rabat, Maroc</p>
+      <p class="text-sm text-gray-800">Tel: 06 19 25 04 87</p>
+    </div>
+  </div>
+
+  <div class="flex justify-between mb-12">
+    <div class="w-1/2">
+      <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1">Facturé à :</p>
+      <div class="border-l-4 border-black pl-4">
+        <h3 class="font-bold text-2xl text-black">
+          {{ selectedInvoice.partenaire?.nom_societe || selectedInvoice.partenaire?.nom || 'Client Inconnu' }}
+        </h3>
+        <p class="text-gray-700">{{ selectedInvoice.partenaire?.email || 'Email non renseigné' }}</p>
+        <p class="text-gray-700">{{ selectedInvoice.partenaire?.telephone || 'Tel non renseigné' }}</p>
+      </div>
+    </div>
+
+    <div class="text-right flex flex-col gap-4">
+      <div>
+        <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1">Date d'émission :</p>
+        <p class="font-bold text-xl text-black">{{ selectedInvoice.date | date:'dd/MM/yyyy' }}</p>
+      </div>
+
+      <div *ngIf="selectedInvoice.statut !== 'validee'">
+        <p class="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1 text-orange-600">
+          Valable jusqu'au :
+        </p>
+        <p class="font-bold text-xl text-black">
+          {{ getDateEcheance(selectedInvoice.date) | date:'dd/MM/yyyy' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-8">
+    <table class="w-full">
+      <thead>
+        <tr>
+          <th class="text-left py-3 px-2 font-black uppercase text-xs border-b border-gray-300">Description
+          </th>
+          <th class="text-center py-3 px-2 font-black uppercase text-xs w-24 border-b border-gray-300">Qté
+          </th>
+          <th class="text-right py-3 px-2 font-black uppercase text-xs w-32 border-b border-gray-300">Prix
+            Unit.</th>
+          <th class="text-right py-3 px-2 font-black uppercase text-xs w-32 border-b border-gray-300">Total
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let line of selectedInvoice.ligneCommandes" class="border-b border-gray-100 last:border-0">
+          <td class="py-4 px-2 font-medium text-black">
+            {{ line.produit?.designation || line.produit?.nom || 'Produit Sans nom' }}
+          </td>
+          <td class="py-4 px-2 text-center text-black">{{ line.quantite }}</td>
+          <td class="py-4 px-2 text-right text-black">{{ line.prix_unitaire | number:'1.2-2' }}</td>
+          <td class="py-4 px-2 text-right font-bold text-black">{{ (line.quantite * line.prix_unitaire) |
+            number:'1.2-2'
+            }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex justify-end mb-20 break-inside-avoid">
+    <div class="w-1/2 md:w-5/12">
+      <div class="flex justify-between py-2 border-b border-gray-300">
+        <span class="text-gray-600 font-medium">Total HT</span>
+        <span class="font-bold">{{ selectedInvoice.total | number:'1.2-2' }} DH</span>
+      </div>
+      <div class="flex justify-between py-4 border-b-4 border-black mt-2 bg-gray-50 px-2">
+        <span class="text-2xl font-black text-black">NET À PAYER</span>
+        <span class="text-2xl font-black text-black">{{ selectedInvoice.total | number:'1.2-2' }} DH</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="invoice-footer text-center text-xs text-gray-500 border-t pt-4 fixed bottom-0 w-full pb-4 bg-white">
+    <p class="font-bold text-black mb-1">Merci pour votre confiance !</p>
+    <p>MY ERP COMPANY - SARL au capital de 100.000 DH - RC 12345 - ICE 001507503</p>
+    <p>Email: contact@myerp.ma - Site: www.myerp.ma</p>
+  </div>
+</div>
+<p-dialog [(visible)]="paiementDialog" [style]="{width: '450px'}" header="Nouveau Paiement" [modal]="true"
+  class="p-fluid no-print">
+  <ng-template pTemplate="content">
+
+    <div class="bg-blue-50 p-4 rounded-lg mb-4 border border-blue-100">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-sm text-gray-500 font-bold">Commande</span>
+        <span class="text-sm font-bold text-gray-800">{{ selectedCommande?.reference }}</span>
+      </div>
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-gray-500 font-bold">Total à Payer</span>
+        <span class="text-xl font-bold text-blue-600">{{ selectedCommande?.total | number:'1.2-2' }} DH</span>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label for="montant" class="text-sm font-bold text-gray-700">Montant (DH)</label>
+        <p-inputNumber [(ngModel)]="paiementObj.montant" inputId="montant" mode="currency" currency="MAD" locale="fr-MA"
+          [max]="selectedCommande?.total" styleClass="w-full">
+        </p-inputNumber>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="mode" class="text-sm font-bold text-gray-700">Mode de paiement</label>
+        <select [(ngModel)]="paiementObj.mode"
+          class="w-full p-3 border border-gray-300 rounded-lg bg-white focus:border-blue-500 outline-none transition">
+          <option value="Espèce">Espèce 💵</option>
+          <option value="Chèque">Chèque 🏦</option>
+          <option value="Virement">Virement 📲</option>
+          <option value="Carte Bancaire">Carte Bancaire 💳</option>
+        </select>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="ref" class="text-sm font-bold text-gray-700">Référence (Optionnel)</label>
+        <input pInputText id="ref" [(ngModel)]="paiementObj.reference" placeholder="Ex: Chèque N° 123456"
+          class="w-full p-2 border rounded-lg" />
+      </div>
+    </div>
+
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Annuler" icon="pi pi-times" class="p-button-text text-gray-600"
+      (click)="paiementDialog = false"></button>
+    <button pButton label="Valider le Paiement" icon="pi pi-check"
+      class="bg-green-600 border-green-600 hover:bg-green-700" (click)="savePaiement()"></button>
+  </ng-template>
+</p-dialog>

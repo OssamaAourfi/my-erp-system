@@ -1,0 +1,126 @@
+<div class="bg-white rounded-xl shadow-sm p-6">
+
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Products Stock</h2>
+    <button (click)="openNew()"
+      class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center gap-2">
+      <i class="pi pi-plus"></i>
+      Add Product
+    </button>
+  </div>
+
+  <p-table [value]="productList" [tableStyle]="{ 'min-width': '60rem' }" styleClass="p-datatable-striped">
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="p-3 bg-gray-50">Image</th>
+        <th class="p-3 bg-gray-50">Ref</th>
+        <th class="p-3 bg-gray-50">Désignation</th>
+        <th class="p-3 bg-gray-50">Prix Vente</th>
+        <th class="p-3 bg-gray-50">Stock</th>
+        <th class="p-3 bg-gray-50 text-right">Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item>
+      <tr class="border-b hover:bg-gray-50">
+        <td class="p-3">
+          <div class="w-12 h-12 bg-gray-200 rounded overflow-hidden flex items-center justify-center text-gray-400">
+            <img *ngIf="item.image" [src]="item.image" class="w-full h-full object-cover">
+            <i *ngIf="!item.image" class="pi pi-image text-xl"></i>
+          </div>
+        </td>
+        <td class="p-3 font-medium">{{ item.reference }}</td>
+        <td class="p-3">{{ item.designation }}</td>
+        <td class="p-3 font-bold text-green-600">{{ item.prix_vente }} DH</td>
+        <td class="p-3">
+          <span [class]="item.stock_quantite > 5 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+            class="px-2 py-1 rounded text-xs font-bold">
+            {{ item.stock_quantite }}
+          </span>
+        </td>
+        <td class="p-3 text-right">
+          <button (click)="onEdit(item)" class="text-blue-500 mx-2 hover:text-blue-700"><i
+              class="pi pi-pencil"></i></button>
+          <button (click)="onDelete(item.id)" class="text-red-500 hover:text-red-700"><i
+              class="pi pi-trash"></i></button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="text-center p-4 text-gray-500">No products found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+</div>
+
+
+<p-dialog [header]="productObj.id == 0 ? 'New Product' : 'Update Product'" [(visible)]="visible" [modal]="true"
+  [style]="{ width: '50vw' }">
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-gray-600">Reference</label>
+      <input pInputText [(ngModel)]="productObj.reference"
+        class="p-2 border rounded outline-none focus:border-green-500" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-gray-600">Désignation</label>
+      <input pInputText [(ngModel)]="productObj.designation"
+        class="p-2 border rounded outline-none focus:border-green-500" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-gray-600">Prix Achat (DH)</label>
+      <input type="number" pInputText [(ngModel)]="productObj.prix_achat"
+        class="p-2 border rounded outline-none focus:border-green-500" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-gray-600">Prix Vente (DH)</label>
+      <input type="number" pInputText [(ngModel)]="productObj.prix_vente"
+        class="p-2 border rounded outline-none focus:border-green-500" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-gray-600">TVA (%)</label>
+      <input type="number" pInputText [(ngModel)]="productObj.tva"
+        class="p-2 border rounded outline-none focus:border-green-500" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-semibold text-gray-600">Stock Initial</label>
+      <input type="number" pInputText [(ngModel)]="productObj.stock_quantite"
+        class="p-2 border rounded outline-none focus:border-green-500" />
+    </div>
+
+    <div class="flex flex-col gap-2 md:col-span-2">
+      <label class="font-semibold text-gray-600">Product Image</label>
+
+      <div class="flex items-center gap-4">
+        <input type="file" (change)="onFileSelect($event)"
+          class="p-2 border rounded text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+
+        <div *ngIf="productObj.image" class="w-16 h-16 border rounded overflow-hidden">
+          <img [src]="productObj.image" class="w-full h-full object-cover">
+        </div>
+      </div>
+
+      <small class="text-gray-400 text-xs truncate">{{ productObj.image }}</small>
+    </div>
+
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2 mt-4">
+      <button (click)="visible = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+      <button (click)="saveProduct()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Save
+        Product</button>
+    </div>
+  </ng-template>
+
+</p-dialog>

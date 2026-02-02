@@ -1,0 +1,46 @@
+/* Par défaut sur l'écran : On cache la facture */
+.print-only {
+  display: none !important;
+}
+
+/* Configuration spéciale pour l'impression */
+@media print {
+
+  /* Cacher tout ce qui a la classe .no-print */
+  .no-print,
+  .p-dialog,
+  .p-toast,
+  app-sidebar,
+  app-navbar {
+    display: none !important;
+  }
+
+  /* Cacher le body par défaut pour éviter les marges bizarres */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Afficher uniquement la zone de facture */
+  #invoice-area,
+  #invoice-area * {
+    visibility: visible;
+  }
+
+  #invoice-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: white;
+    display: block !important;
+    /* Force l'affichage */
+  }
+
+  /* Enlever les ombres et les couleurs de fond pour économiser l'encre */
+  .shadow-sm,
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+}

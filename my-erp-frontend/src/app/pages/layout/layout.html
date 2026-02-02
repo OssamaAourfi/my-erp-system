@@ -1,0 +1,228 @@
+<div class="flex h-screen bg-gray-50 font-sans">
+
+  <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-xl z-20 transition-all duration-300">
+
+    <div class="h-16 flex items-center justify-center border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
+      <h1 class="text-xl font-bold tracking-widest text-white">
+        MY <span class="text-blue-500">ERP</span>
+      </h1>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-6 scrollbar-hide">
+
+      <div>
+        <p class="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Principal</p>
+        <a routerLink="/dashboard" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          class="flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-xl transition-all duration-200 cursor-pointer group mb-1">
+          <i class="pi pi-home text-lg mr-3 group-hover:text-blue-400 transition-colors"></i>
+          <span class="font-medium text-sm">Tableau de bord</span>
+        </a>
+      </div>
+
+      <div>
+        <p class="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Gestion Commerciale</p>
+
+        <a routerLink="/ventes" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          class="flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-xl transition-all duration-200 cursor-pointer group mb-1">
+          <i class="pi pi-shopping-cart text-lg mr-3 group-hover:text-blue-400 transition-colors"></i>
+          <span class="font-medium text-sm">Ventes</span>
+        </a>
+
+        <a routerLink="/achats" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          class="flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-xl transition-all duration-200 cursor-pointer group mb-1">
+          <i class="pi pi-shopping-bag text-lg mr-3 group-hover:text-blue-400 transition-colors"></i>
+          <span class="font-medium text-sm">Achats</span>
+        </a>
+
+        <a routerLink="/products" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          class="flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-xl transition-all duration-200 cursor-pointer group mb-1">
+          <i class="pi pi-box text-lg mr-3 group-hover:text-blue-400 transition-colors"></i>
+          <span class="font-medium text-sm">Produits & Stock</span>
+        </a>
+      </div>
+
+      <div>
+        <p class="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Partenaires</p>
+
+        <a routerLink="/clients" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          class="flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-xl transition-all duration-200 cursor-pointer group mb-1">
+          <i class="pi pi-users text-lg mr-3 group-hover:text-blue-400 transition-colors"></i>
+          <span class="font-medium text-sm">Clients</span>
+        </a>
+
+        <a routerLink="/fournisseurs" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          class="flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-xl transition-all duration-200 cursor-pointer group mb-1">
+          <i class="pi pi-truck text-lg mr-3 group-hover:text-blue-400 transition-colors"></i>
+          <span class="font-medium text-sm">Fournisseurs</span>
+        </a>
+      </div>
+
+      <div *ngIf="authService.isAdmin()">
+        <p class="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Administration</p>
+
+        <a routerLink="/users" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+          class="flex items-center px-4 py-3 text-gray-400 hover:bg-gray-800 hover:text-white rounded-xl transition-all duration-200 cursor-pointer group mb-1">
+          <i class="pi pi-cog text-lg mr-3 group-hover:text-blue-400 transition-colors"></i>
+          <span class="font-medium text-sm">Utilisateurs</span>
+        </a>
+      </div>
+
+    </nav>
+
+    <div class="p-4 border-t border-gray-800">
+      <button (click)="logout()"
+        class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-300 text-sm font-bold">
+        <i class="pi pi-power-off"></i>
+        <span>Déconnexion</span>
+      </button>
+    </div>
+  </aside>
+
+
+  <div class="flex-1 flex flex-col overflow-hidden relative">
+
+    <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 z-10 sticky top-0">
+
+      <div class="flex flex-col">
+        <h2 class="text-xl font-bold text-gray-800 tracking-tight">Vue d'ensemble</h2>
+        <span class="text-xs text-gray-500">Bienvenue sur votre ERP</span>
+      </div>
+
+      <div class="flex items-center gap-6">
+
+        <button class="p-2 text-gray-400 hover:text-blue-600 transition-colors relative focus:outline-none"
+          (click)="op.toggle($event)">
+          <i class="pi pi-bell text-xl"></i>
+          <span *ngIf="alertCount > 0"
+            class="absolute top-1 right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+        </button>
+
+        <div class="flex items-center gap-3 cursor-pointer p-1 rounded-full hover:bg-gray-100 transition-colors pr-3"
+          (click)="userMenu.toggle($event)">
+          <p-avatar [label]="currentUser.nom?.charAt(0) || 'A'" shape="circle" size="normal"
+            [style]="{'background-color': '#3B82F6', 'color': '#ffffff', 'font-weight': 'bold'}">
+          </p-avatar>
+          <div class="hidden md:flex flex-col items-start">
+            <span class="text-sm font-bold text-gray-700">{{ currentUser.nom }}</span>
+            <span class="text-[10px] uppercase text-gray-400 font-semibold">{{ currentUser.role }}</span>
+          </div>
+          <i class="pi pi-chevron-down text-xs text-gray-400"></i>
+        </div>
+
+      </div>
+
+      <p-overlayPanel #op [style]="{width: '380px'}" styleClass="shadow-xl border-0 rounded-xl">
+        <ng-template pTemplate>
+          <div class="p-2">
+            <div class="flex items-center justify-between mb-4 border-b pb-2">
+              <span class="font-bold text-gray-800">⚠️ Alertes Stock</span>
+              <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">{{ alertCount }}</span>
+            </div>
+
+            <div *ngIf="alerts.length === 0" class="text-center text-gray-500 py-6 flex flex-col items-center">
+              <i class="pi pi-check-circle text-green-500 text-3xl mb-3"></i>
+              <p class="text-sm font-medium">Tout va bien! Stock OK.</p>
+            </div>
+
+            <div *ngFor="let item of alerts" (click)="navigateToProduct(item); op.hide()"
+              class="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors border-b border-gray-50 last:border-0 group">
+
+              <div
+                class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
+                <img *ngIf="item.image" [src]="item.image" class="w-full h-full object-cover">
+                <i *ngIf="!item.image" class="pi pi-box text-gray-400"></i>
+              </div>
+
+              <div class="flex-1">
+                <div class="font-bold text-sm text-gray-800 group-hover:text-blue-600 transition-colors">{{
+                  item.designation }}</div>
+                <div class="text-xs text-gray-500">Ref: {{ item.reference }}</div>
+              </div>
+
+              <span class="px-2 py-1 rounded text-xs font-bold text-white shadow-sm"
+                [ngClass]="{'bg-red-500': item.stock <= 0, 'bg-orange-400': item.stock > 0}">
+                Stock: {{ item.stock }}
+              </span>
+            </div>
+          </div>
+        </ng-template>
+      </p-overlayPanel>
+
+      <p-menu #userMenu [popup]="true" [model]="items" styleClass="w-48 shadow-xl rounded-xl mt-2"></p-menu>
+    </header>
+
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50/50 p-8">
+      <div class="max-w-7xl mx-auto">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+
+  </div>
+
+</div>
+
+
+<p-dialog header="Mon Profil" [(visible)]="visibleProfile" [modal]="true" [style]="{width: '450px'}" [draggable]="false"
+  [resizable]="false" styleClass="rounded-xl overflow-hidden" maskStyle="backdrop-filter: blur(4px)">
+
+  <div class="flex flex-col items-center justify-center text-center p-6">
+    <div class="mb-4 relative">
+      <div class="absolute inset-0 bg-blue-500 blur-xl opacity-20 rounded-full"></div>
+      <p-avatar [label]="currentUser.nom?.charAt(0) || 'A'" shape="circle" size="xlarge"
+        [style]="{'background-color': '#3B82F6', 'color': '#ffffff', 'width': '96px', 'height': '96px', 'font-size': '2.5rem', 'border': '4px solid white', 'box-shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1)'}"
+        styleClass="relative z-10">
+      </p-avatar>
+    </div>
+
+    <h2 class="text-2xl font-bold text-gray-900 m-0">{{ currentUser.nom }} {{ currentUser.prenom }}</h2>
+    <p class="text-gray-500 text-sm mb-3">{{ currentUser.email }}</p>
+
+    <span
+      class="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-full text-xs font-bold tracking-wide uppercase">
+      {{ currentUser.role }}
+    </span>
+
+    <div class="w-full h-px bg-gray-100 my-6"></div>
+
+    <div class="flex flex-col w-full gap-3">
+      <button pButton label="Changer Mot de passe" icon="pi pi-lock"
+        class="p-button-outlined p-button-secondary w-full justify-center font-bold" (click)="openPasswordDialog()">
+      </button>
+      <button pButton label="Fermer" (click)="visibleProfile = false"
+        class="p-button-text p-button-plain text-gray-500 w-full justify-center">
+      </button>
+    </div>
+
+  </div>
+</p-dialog>
+
+<p-dialog header="Sécurité" [(visible)]="visiblePasswordDialog" [modal]="true" [style]="{width: '400px'}"
+  [draggable]="false" [resizable]="false" maskStyle="backdrop-filter: blur(4px)">
+
+  <div class="flex flex-col gap-5 p-2 pt-4">
+    <div class="flex flex-col gap-2">
+      <label class="font-bold text-sm text-gray-700">Mot de passe actuel</label>
+      <input type="password" pInputText [(ngModel)]="passwordData.currentPassword"
+        class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500/20" placeholder="••••••" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-bold text-sm text-gray-700">Nouveau mot de passe</label>
+      <input type="password" pInputText [(ngModel)]="passwordData.newPassword"
+        class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500/20" placeholder="••••••" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label class="font-bold text-sm text-gray-700">Confirmer</label>
+      <input type="password" pInputText [(ngModel)]="passwordData.confirmPassword"
+        class="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500/20" placeholder="••••••" />
+    </div>
+
+    <div class="flex gap-3 justify-end mt-4 pt-4 border-t border-gray-100">
+      <button pButton label="Annuler" class="p-button-text p-button-secondary font-bold"
+        (click)="visiblePasswordDialog = false"></button>
+      <button pButton label="Mettre à jour" class="p-button-primary font-bold"
+        (click)="submitPasswordChange()"></button>
+    </div>
+  </div>
+</p-dialog>

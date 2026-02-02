@@ -1,0 +1,79 @@
+/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@media print {
+
+  app-sidebar,
+  app-navbar,
+  header,
+  nav,
+  aside,
+
+  .sidebar,
+
+  .p-sidebar,
+
+  button,
+
+  .btn,
+  a.logout,
+
+  .logout-btn,
+  *[class*="sidebar"],
+
+  *[class*="navbar"]
+
+
+    {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+  }
+
+    @page {
+
+      margin: 0;
+      size: auto;
+    }
+
+  body,
+  html,
+  app-root {
+    background-color: white !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+
+  .main-content,
+  .content-wrapper,
+  .dashboard-container {
+    margin-left: 0 !important;
+
+    width: 100% !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+
+    body {
+
+      margin: 1.5cm;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+  #invoice-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
